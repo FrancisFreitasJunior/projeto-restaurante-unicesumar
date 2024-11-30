@@ -8,7 +8,7 @@ int pessoasPorDia[5] = {0}; // Mantém como variável global
 
 struct reserva
 {
-    char cpf[15]; 
+    char cpf[15];
     char nome[100];
     int dia;
     int numeroPessoas;
@@ -64,7 +64,7 @@ void cadastroReserva(struct reserva *r)
 
     separadorSimples();
     printf("Digite o CPF (somente números): \n");
-    scanf("%d", &r->cpf);
+    scanf("%s", r->cpf);
 
     separadorSimples();
     printf("Escolha o dia da reserva:\n");
@@ -76,7 +76,7 @@ void cadastroReserva(struct reserva *r)
         separadorSimples();
         printf("Digite o número correspondente ao dia (1 a 4): \n");
         scanf("%d", &r->dia);
-        
+
         if (r->dia < 1 || r->dia > 4)
         {
             separadorError();
@@ -118,9 +118,34 @@ void listarReservas(struct reserva reservas[], int numReservas)
     {
         separadorDuplo();
         printf("Nome: %s\n", reservas[i].nome);
-        printf("CPF: %d\n", reservas[i].cpf); // CPF formatado (apenas número por enquanto)
+        printf("CPF: %s\n", reservas[i].cpf); // CPF formatado (apenas número por enquanto)
         printf("Dia: %d\n", reservas[i].dia);
         printf("Número de Pessoas: %d\n", reservas[i].numeroPessoas);
+        separadorDuplo();
+    }
+}
+
+void mostrarTotalPorDia()
+{
+    const char *dias[] = {"Quinta-feira", "Sexta-feira", "Sábado", "Domingo"};
+
+    for (int i = 1; i <= 4; i++) // Loop pelos 4 dias (1 a 4)
+    {
+        int totalReservado = pessoasPorDia[i];
+        int vagasDisponiveis = MAX_PESSOAS_POR_DIA - totalReservado;
+
+        separadorDuplo();
+        printf("%s:\n", dias[i - 1]);
+        if (totalReservado >= MAX_PESSOAS_POR_DIA)
+        {
+            printf("Total pessoas: %d\n", totalReservado);
+            printf("Disponível: LOTADO\n");
+        }
+        else
+        {
+            printf("Total reservas: %d\n", totalReservado);
+            printf("Disponíveis: %d\n", vagasDisponiveis);
+        }
         separadorDuplo();
     }
 }
@@ -168,7 +193,12 @@ int main()
             break;
 
         case 3:
-            printf("Cálculo de total por dia ainda não implementado.\n");
+            headSystem();
+            printf("|---------Total de pessoas por dia-----------|\n");
+            mostrarTotalPorDia();
+            printf("\nEnter para voltar ao menu principal...");
+            getchar(); // Captura o Enter do usuário
+            getchar(); // Para evitar problemas de buffer
             break;
 
         case 4:
