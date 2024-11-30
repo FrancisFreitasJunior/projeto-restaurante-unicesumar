@@ -12,6 +12,7 @@ struct reserva
     char nome[100];
     int dia;
     int numeroPessoas;
+    int status;  // 1 para reserva confirmada, 0 para não confirmada
 };
 
 void separadorDuplo()
@@ -52,19 +53,21 @@ void menuSystem()
 void pausa()
 {
     printf("\nPressione Enter para continuar...");
-    while (getchar() != '\n')
+    while (getchar() != '\n') // Limpa o buffer de entrada
         ;
-    getchar();
+    getchar(); // Espera o Enter
 }
 
 void cadastroReserva(struct reserva *r)
 {
     printf("Digite seu nome: \n");
-    scanf(" %[^\n]s", r->nome); // Lê uma string com espaços
+    fgets(r->nome, sizeof(r->nome), stdin);
+    r->nome[strcspn(r->nome, "\n")] = '\0';  // Remove a nova linha no final, caso seja capturada
 
     separadorSimples();
     printf("Digite o CPF (somente números): \n");
-    scanf("%s", r->cpf);
+    fgets(r->cpf, sizeof(r->cpf), stdin);
+    r->cpf[strcspn(r->cpf, "\n")] = '\0';  // Remove a nova linha no final, caso seja capturada
 
     separadorSimples();
     printf("Escolha o dia da reserva:\n");
@@ -83,25 +86,30 @@ void cadastroReserva(struct reserva *r)
             printf("####### DIA INVÁLIDO! TENTE NOVAMENTE. #######\n");
             separadorError();
         }
-        else if (pessoasPorDia[r->dia] >= MAX_PESSOAS_POR_DIA)
+        else if (pessoasPorDia[r->dia - 1] >= MAX_PESSOAS_POR_DIA)  // Ajuste aqui para usar r->dia - 1
         {
             separadorSimples();
             printf("Limite de reservas para este dia atingido! \nEscolha outro dia.\n");
             r->dia = 0; // Reseta para forçar nova entrada de dia
         }
-    } while (r->dia < 1 || r->dia > 4 || pessoasPorDia[r->dia] >= MAX_PESSOAS_POR_DIA); // Verifica se o dia já está lotado
+    } while (r->dia < 1 || r->dia > 4 || pessoasPorDia[r->dia - 1] >= MAX_PESSOAS_POR_DIA); // Corrigido aqui também
 
     separadorSimples();
     printf("Digite o número de pessoas: ");
     scanf("%d", &r->numeroPessoas);
 
-    if (pessoasPorDia[r->dia] + r->numeroPessoas > MAX_PESSOAS_POR_DIA)
+    // Valida a quantidade de pessoas para garantir que o número de pessoas não ultrapasse a capacidade
+    if (pessoasPorDia[r->dia - 1] + r->numeroPessoas > MAX_PESSOAS_POR_DIA)  // Correção do índice
     {
         printf("Não é possível realizar a reserva. \nLimite de pessoas para o dia atingido.\n");
-        return;
+        return; // Retorna sem cadastrar a reserva
     }
 
-    pessoasPorDia[r->dia] += r->numeroPessoas; // Incrementa o contador de reservas para o dia
+    // Caso a validação passe, incrementa o contador de reservas para o dia
+    pessoasPorDia[r->dia - 1] += r->numeroPessoas;
+
+    // Define o status da reserva como 1 (reserva confirmada)
+    r->status = 1;
 
     printf("\nReserva cadastrada com sucesso!\n");
 }
@@ -116,12 +124,15 @@ void listarReservas(struct reserva reservas[], int numReservas)
 
     for (int i = 0; i < numReservas; i++)
     {
-        separadorDuplo();
-        printf("Nome: %s\n", reservas[i].nome);
-        printf("CPF: %s\n", reservas[i].cpf); // CPF formatado (apenas número por enquanto)
-        printf("Dia: %d\n", reservas[i].dia);
-        printf("Número de Pessoas: %d\n", reservas[i].numeroPessoas);
-        separadorDuplo();
+        if (reservas[i].status == 1) // Verifica se a reserva foi válida (status 1)
+        {
+            separadorDuplo();
+            printf("Nome: %s\n", reservas[i].nome);
+            printf("CPF: %s\n", reservas[i].cpf); // CPF formatado
+            printf("Dia: %d\n", reservas[i].dia);
+            printf("Número de Pessoas: %d\n", reservas[i].numeroPessoas);
+            separadorDuplo();
+        }
     }
 }
 
@@ -163,6 +174,8 @@ int main()
     {
         menuSystem();
         scanf("%d", &opcao);
+        // Limpa o buffer após ler a opção
+        while (getchar() != '\n');
 
         switch (opcao)
         {
@@ -187,9 +200,8 @@ int main()
             printf("|---------Listando todas as reservas---------|\n");
             separadorSimples();
             listarReservas(reservas, numReservas);
-            printf("\nEnter para voltar ao menu principal...");
-            getchar(); // Captura o Enter do usuário
-            getchar(); // Para evitar problemas de buffer
+            printf("\nPressione Enter para voltar ao menu principal...");
+            getchar(); // Espera o Enter do usuário
             break;
 
         case 3:
@@ -197,8 +209,7 @@ int main()
             printf("|---------Total de pessoas por dia-----------|\n");
             mostrarTotalPorDia();
             printf("\nEnter para voltar ao menu principal...");
-            getchar(); // Captura o Enter do usuário
-            getchar(); // Para evitar problemas de buffer
+            getchar(); // Espera o Enter do usuário
             break;
 
         case 4:
