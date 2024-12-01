@@ -12,7 +12,7 @@ struct reserva
     char nome[100];
     int dia;
     int numeroPessoas;
-    int status;  // 1 para reserva confirmada, 0 para não confirmada
+    int status; // 1 para reserva confirmada, 0 para não confirmada
 };
 
 void separadorDuplo()
@@ -62,12 +62,12 @@ void cadastroReserva(struct reserva *r)
 {
     printf("Digite seu nome: \n");
     fgets(r->nome, sizeof(r->nome), stdin);
-    r->nome[strcspn(r->nome, "\n")] = '\0';  // Remove a nova linha no final, caso seja capturada
+    r->nome[strcspn(r->nome, "\n")] = '\0'; // Remove a nova linha no final, caso seja capturada
 
     separadorSimples();
     printf("Digite o CPF (somente números): \n");
     fgets(r->cpf, sizeof(r->cpf), stdin);
-    r->cpf[strcspn(r->cpf, "\n")] = '\0';  // Remove a nova linha no final, caso seja capturada
+    r->cpf[strcspn(r->cpf, "\n")] = '\0'; // Remove a nova linha no final, caso seja capturada
 
     separadorSimples();
     printf("Escolha o dia da reserva:\n");
@@ -86,7 +86,7 @@ void cadastroReserva(struct reserva *r)
             printf("####### DIA INVÁLIDO! TENTE NOVAMENTE. #######\n");
             separadorError();
         }
-        else if (pessoasPorDia[r->dia - 1] >= MAX_PESSOAS_POR_DIA)  // Ajuste aqui para usar r->dia - 1
+        else if (pessoasPorDia[r->dia - 1] >= MAX_PESSOAS_POR_DIA) // Ajuste aqui para usar r->dia - 1
         {
             separadorSimples();
             printf("Limite de reservas para este dia atingido! \nEscolha outro dia.\n");
@@ -99,7 +99,7 @@ void cadastroReserva(struct reserva *r)
     scanf("%d", &r->numeroPessoas);
 
     // Valida a quantidade de pessoas para garantir que o número de pessoas não ultrapasse a capacidade
-    if (pessoasPorDia[r->dia - 1] + r->numeroPessoas > MAX_PESSOAS_POR_DIA)  // Correção do índice
+    if (pessoasPorDia[r->dia - 1] + r->numeroPessoas > MAX_PESSOAS_POR_DIA) // Correção do índice
     {
         printf("Não é possível realizar a reserva. \nLimite de pessoas para o dia atingido.\n");
         return; // Retorna sem cadastrar a reserva
@@ -140,13 +140,13 @@ void mostrarTotalPorDia()
 {
     const char *dias[] = {"Quinta-feira", "Sexta-feira", "Sábado", "Domingo"};
 
-    for (int i = 1; i <= 4; i++) // Loop pelos 4 dias (1 a 4)
+    for (int i = 0; i < 4; i++) // Corrigido: o índice deve começar em 0
     {
-        int totalReservado = pessoasPorDia[i];
+        int totalReservado = pessoasPorDia[i]; // Corrigido: agora acessa o índice correto
         int vagasDisponiveis = MAX_PESSOAS_POR_DIA - totalReservado;
 
         separadorDuplo();
-        printf("%s:\n", dias[i - 1]);
+        printf("%s:\n", dias[i]);
         if (totalReservado >= MAX_PESSOAS_POR_DIA)
         {
             printf("Total pessoas: %d\n", totalReservado);
@@ -175,7 +175,8 @@ int main()
         menuSystem();
         scanf("%d", &opcao);
         // Limpa o buffer após ler a opção
-        while (getchar() != '\n');
+        while (getchar() != '\n')
+            ;
 
         switch (opcao)
         {
